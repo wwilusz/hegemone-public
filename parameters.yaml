@@ -1,3 +1,6 @@
+google-cloud-platform:
+  GCS_BUCKET: PROVIDE_VALID_EXISTING_GCS_BUCKET_URI
+
 project: &project
   PROJECT_NAME: sample-project
   PROJECT_ID: sample-project-01
