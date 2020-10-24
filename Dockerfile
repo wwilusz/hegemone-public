@@ -18,5 +18,8 @@ RUN cd /project && pip install --pre -r requirements.txt
 
 # Copy local code to the container image.
 ENV PROJECT_HOME /project
+ENV APP_HOME /project
 WORKDIR $PROJECT_HOME
 COPY . ./
+
+CMD exec gunicorn --bind :$PORT --workers 1 --threads 8 --timeout 0 app:app
