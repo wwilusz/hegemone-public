@@ -1,5 +1,0 @@
-notebook: ./notebooks/templates/00-ww-sample-template.ipynb
-parameters_file: ./parameters.yaml
-parameters_section: project
-output_notebook: gs://PATH_TO_NOTEBOOK
-kernel_name: Python3
