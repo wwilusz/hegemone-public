@@ -1,9 +1,10 @@
 PROJECT_ID=$(shell gcloud config get-value core/project)
 all:
 	@echo "build  - Build the docker image"
-	@echo "deploy - Deploy the image to Cloud Run"
+	@echo "deploy - Deploy the image to Cloud Run (or locally)"
 	@echo "clean  - Clean up created artifacts"
-	@echo "test   - Call the Cloud Run service with a sample command"
+	@echo "test   - Call the Cloud Run (or local) service with a sample command"
+	@echo "If appended with '-local' postfix, all commands will be run locally"
 
 deploy:
 	gcloud run deploy cloud-run-hegemone \
@@ -13,8 +14,21 @@ deploy:
 		--region us-central1 \
 		--no-allow-unauthenticated
 
+deploy-local:
+	docker run \
+		-e "PORT=5000" \
+		-e "GOOGLE_APPLICATION_CREDENTIALS=/tmp/keys/FILE_NAME.json" \
+		-v $GOOGLE_APPLICATION_CREDENTIALS:/tmp/keys/FILE_NAME.json:ro \
+		--publish 5000:5000 \
+		--name local-hegemone-service \
+		--rm \
+		local-hegemone
+
 build:
 	gcloud builds submit --tag gcr.io/$(PROJECT_ID)/cloud-run-hegemone
+
+build-local:
+	docker build -t local-hegemone .
 
 clean:
 	-gcloud container images delete gcr.io/$(PROJECT_ID)/cloud-run-hegemone --quiet
@@ -22,6 +36,9 @@ clean:
 		--platform managed \
 		--region us-central1 \
 		--quiet
+
+clean-local:
+	docker rmi --force local-hegemone
 
 test:
 	@echo "Testing Cloud Run hegemone service"
@@ -31,4 +48,11 @@ test:
   		 --header "Authorization: Bearer $$token" \
   		 --header "Content-Type: text/plain" \
   		 $$url/exec \
+  		 --data-binary "python ./run.py -h"
+
+test-local:
+	@echo "Testing local hegemone service"
+	curl --request POST \
+		 --header "Content-Type: text/plain" \
+  		 127.0.0.1:5000/exec \
   		 --data-binary "python ./run.py -h"
