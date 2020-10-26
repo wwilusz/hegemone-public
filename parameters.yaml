@@ -2,10 +2,11 @@ google-cloud-platform:
   GCS_BUCKET: PROVIDE_VALID_EXISTING_GCS_BUCKET_URI
 
 project: &project
+  DATA_PROJECT_ID: PROVIDE_VALID_GCS_PROJECT_ID
   PROJECT_NAME: sample-project
   PROJECT_ID: sample-project-01
 
 common: &common
   <<: *project
   PARAMETER_01: 2020-10-03 00:00:00+0000
-  PARAMETER_02: "just a string"
+  PARAMETER_02: "another string"
