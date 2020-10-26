@@ -1,4 +1,7 @@
 papermill[all]
+pyarrow
 pyyaml
 Flask
 gunicorn
+google-cloud-bigquery
+google-cloud-bigquery-storage
