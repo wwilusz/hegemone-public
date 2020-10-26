@@ -1,5 +1,6 @@
 import papermill as pm
 import multiprocessing as mp
+import requests
 import yaml
 import argparse
 import os
@@ -151,10 +152,9 @@ if __name__ == "__main__":
                    PARAMETERS_SECTION=args.parameters_section,
                    KERNEL_NAME=args.kernel_name)
         flags = get_flags()
-
-        command = 'curl --request POST --header "Authorization: Bearer {TOKEN}" --header "Content-Type: text/plain" --data parameters="{FLAGS}" ' \
-                  '{URL}/exec --data-binary " {COMMAND}"'.format(TOKEN=auth_token, URL=url, COMMAND=run_notebook_command, FLAGS=flags)
-        curl = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
-        print("Process complete")
+        requests.post(f"{url}/exec",
+                      f"parameters={flags} {run_notebook_command}".encode(),
+                      headers={"Authorization": f"Bearer {auth_token}",
+                               "Content-Type": "text/plain"})
     else:
         run_notebook(args.notebook, parameters, out_notebook_fp=args.output_notebook, kernel_name=args.kernel_name)
