@@ -125,6 +125,7 @@ if __name__ == "__main__":
                                                        gcs_bucket=parameters_dict['google-cloud-platform']['GCS_BUCKET'])
         print("  - destination: {}".format(out_notebook_fp))
         print('Calling Cloud Run hegemone service')
+
         # obtain details about the service
         command = "gcloud run services describe cloud-run-hegemone --format='value(status.url)' --region us-central1 " \
                   "--platform managed"
@@ -135,9 +136,18 @@ if __name__ == "__main__":
         auth_token = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         auth_token = auth_token.stdout.decode("utf-8").replace('\n','')
 
-        #todo: mirror the run.py's functionality with curl; send out parameters.yaml
-        run_notebook_command = 'python run.py {IN_NOTEBOOK} -o {OUT_NOTEBOOK}'.format(IN_NOTEBOOK=args.notebook,
-                                                                                      OUT_NOTEBOOK=out_notebook_fp)
+        # upload a parameters.yaml file
+        # todo: ultimately parameters need to be supplied via a request, not by uploading and overwriting the param file
+        command = 'curl --request POST --header "Authorization: Bearer {TOKEN}" -F file=@parameters.yaml ' \
+                  '{URL}/save_file'.format(TOKEN=auth_token, URL=url)
+        curl = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+
+        # execute the notebook
+        run_notebook_command = 'python run.py {IN_NOTEBOOK} -o {OUT_NOTEBOOK} -s {PARAMETERS_SECTION} -k {KERNEL_NAME}'.\
+            format(IN_NOTEBOOK=args.notebook,
+                   OUT_NOTEBOOK=out_notebook_fp,
+                   PARAMETERS_SECTION=args.parameters_section,
+                   KERNEL_NAME=args.kernel_name)
 
         command = 'curl --request POST --header "Authorization: Bearer {TOKEN}" --header "Content-Type: text/plain" ' \
                   '{URL}/exec --data-binary "{COMMAND}"'.format(TOKEN=auth_token, URL=url, COMMAND=run_notebook_command)
