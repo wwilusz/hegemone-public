@@ -9,6 +9,8 @@ all:
 deploy:
 	gcloud run deploy cloud-run-hegemone \
 		--image gcr.io/$(PROJECT_ID)/cloud-run-hegemone \
+		--memory 4Gi \
+		--cpu 1 \
 		--max-instances 1 \
 		--platform managed \
 		--region us-central1 \
