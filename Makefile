@@ -42,6 +42,9 @@ clean:
 clean-local:
 	docker rmi --force local-hegemone
 
+sync:
+	gsutil -m cp -n gs://${BUCKET}/* ./notebooks/executed
+
 test:
 	@echo "Testing Cloud Run hegemone service"
 	@url=$(shell gcloud run services describe cloud-run-hegemone --format='value(status.url)' --region us-central1 --platform managed); \
