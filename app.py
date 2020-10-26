@@ -1,6 +1,24 @@
 import os
 import subprocess
+import base64
+import yaml
 from flask import Flask, request, make_response
+
+def parse_params(cmd_string, save_to, verify=False):
+    cmds = cmd_string.split(" ")
+
+    prms = [c for c in cmds if c.startswith("parameters=")]
+    if len(prms) == 1:
+        cmds.remove(prms[0])
+        prms = prms[0].replace("parameters=", "")
+        with open(save_to, "w") as fout:
+            fout.write(base64.b64decode(prms).decode())
+
+        if verify:
+            with open(save_to, "r") as fout:
+                yaml.load(fout)
+
+    return " ".join(cmds)
 
 print("Started...")
 app = Flask(__name__)
@@ -15,6 +33,11 @@ def func1():
 @app.route('/exec', methods=['POST'])
 def route_exec():
     command = request.data.decode('utf-8')
+
+    command = parse_params(command, save_to="config.yml", verify=True)
+    if os.path.exists("config.yml"):
+        print(f"Config file written to 'config.yml'")
+
     try:
         completedProcess = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT,
                                           timeout=1000, universal_newlines=True)
